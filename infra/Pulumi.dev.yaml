@@ -1,0 +1,6 @@
+config:
+  aws:region: us-east-1
+  newrelic-pulumi-workshop:notifyViaEmail: change@me.email
+  newrelic:accountId: "1234567"
+  newrelic:apiKey:
+    secure: AAABBBCCC

@@ -1,0 +1,13 @@
+version: "3"
+
+services:
+  express:
+    build: apps/express
+    env_file: apps/express/.env
+    ports:
+      - "3000:3000"
+  next:
+    build: apps/next
+    env_file: apps/next/.env
+    ports:
+      - "9000:9000"

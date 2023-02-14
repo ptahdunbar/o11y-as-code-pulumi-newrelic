@@ -29,9 +29,9 @@ const myTeamTag = {
 }
 
 // Simple type definitions
-let alertPolicies: { [key: string]: any } = {}
+let policies: { [key: string]: any } = {}
 let tags: { [key: string]: any } = {}
-let monitor: { [key: string]: any } = {}
+let synthetics: { [key: string]: any } = {}
 
 
 
@@ -171,7 +171,7 @@ apps.forEach(name => {
    * @link https://docs.newrelic.com/docs/alerts-applied-intelligence/new-relic-alerts/get-started/your-first-nrql-condition/
    * @link https://docs.newrelic.com/docs/query-your-data/nrql-new-relic-query-language/get-started/introduction-nrql-new-relics-query-language/
    */
-  alertPolicies[name] = new newrelic.AlertPolicy(`${name}-alert`, {
+  policies[name] = new newrelic.AlertPolicy(`${name}-alert`, {
     /**
      * The rollup strategy for the policy.
      * Options include: `PER_POLICY`, `PER_CONDITION`, or `PER_CONDITION_AND_TARGET`.  The default is `PER_POLICY`.
@@ -181,7 +181,7 @@ apps.forEach(name => {
 
   const latencyCondition = new newrelic.NrqlAlertCondition(`${name}-latency-condition`, {
     description: 'Alert when latency exceed acceptable threshold.',
-    policyId: alertPolicies[name].id.apply((id: any) => parseInt(id)),
+    policyId: policies[name].id.apply((id: any) => parseInt(id)),
     nrql: {
       query: `SELECT (count(apm.service.error.count) / count(apm.service.transaction.duration))*100 FROM Metric WHERE (appName ='${name}') AND (transactionType = 'Web')`,
     },
@@ -196,12 +196,12 @@ apps.forEach(name => {
     violationTimeLimitSeconds: 300000,
     enabled: true,
   }, {
-    dependsOn: alertPolicies[name],
+    dependsOn: policies[name],
   });
 
   const errorCondition = new newrelic.NrqlAlertCondition(`${name}-error-condition`, {
     description: 'Alert when errors exceed acceptable threshold.',
-    policyId: alertPolicies[name].id.apply((id: any) => parseInt(id)),
+    policyId: policies[name].id.apply((id: any) => parseInt(id)),
     nrql: {
       query: `SELECT count(*) FROM TransactionError WHERE (appName = '${name}') AND (\`error.expected\` IS FALSE OR \`error.expected\` IS NULL)`,
     },
@@ -216,7 +216,7 @@ apps.forEach(name => {
     violationTimeLimitSeconds: (3 * 60000), // 3 minutes
     enabled: true,
   }, {
-    dependsOn: alertPolicies[name],
+    dependsOn: policies[name],
   });
 
 
@@ -241,7 +241,7 @@ apps.forEach(name => {
       predicates: [{
           attribute: 'accumulations.policyName',
           operator: 'EXACTLY_MATCHES',
-          values: [alertPolicies[name].name.apply((name: any) => name)],
+          values: [policies[name].name.apply((name: any) => name)],
       }],
     },
     destinations: [
@@ -277,7 +277,7 @@ let urls = [
 ]
 
 urls.forEach(url => {
-  monitor[url] = new newrelic.synthetics.Monitor(`check-${url}`, {
+  synthetics[url] = new newrelic.synthetics.Monitor(`check-${url}`, {
     status: 'ENABLED',
     type: 'BROWSER',
     uri: url,

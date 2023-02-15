@@ -19,22 +19,47 @@ const apps = [
   'newrelic-pulumi-next',
 ]
 
-// Group all your resources under a workload
-const workload = 'New Relic x Pulumi Workshop'
-
 // Tag all resources created with my team
 const myTeamTag = {
   key: 'team',
   values: ['acme_corp'],
 }
 
-// Simple type definitions
+// Group all your resources under a workload
+const workload = 'New Relic x Pulumi Workshop'
+
+// simple type definitions so TypeScript doesn't complain :D
 let policies: { [key: string]: any } = {}
 let tags: { [key: string]: any } = {}
 let synthetics: { [key: string]: any } = {}
 
 
 
+/**
+ * Tags
+ * 
+ * Add tags to our applications to help organize and find your data.
+ * 
+ * @link https://docs.newrelic.com/docs/new-relic-solutions/new-relic-one/core-concepts/use-tags-help-organize-find-your-data/
+ */
+apps.forEach(name => {  
+  // Fetch an application by name
+  const app = newrelic.getEntityOutput({
+    name,
+  })
+
+  // Create tags for the application
+  tags[name] = new newrelic.EntityTags(`${name}-tags`, {
+    guid: app.guid,
+    tags: [
+      myTeamTag,
+      {
+        key: 'env',
+        values: ['testing'],
+      }
+    ],
+  })
+})
 
 
 
@@ -52,9 +77,6 @@ const _workload = new newrelic.plugins.Workload(workload, {
 });
 
 export const workload_permalink = _workload.permalink
-
-
-
 
 
 
@@ -127,50 +149,18 @@ const emailChannel = new newrelic.NotificationChannel('email-channel', {
 
 
 
-// Loop through our applications and apply tags and alerts
+
+
+
+/**
+ * Alerts
+ * 
+ * Receive notifications when an incident is created, closed, or updated.
+ * 
+ * @link https://docs.newrelic.com/docs/alerts-applied-intelligence/new-relic-alerts/get-started/your-first-nrql-condition/
+ * @link https://docs.newrelic.com/docs/query-your-data/nrql-new-relic-query-language/get-started/introduction-nrql-new-relics-query-language/
+ */
 apps.forEach(name => {
-  
-  
-  /**
-   * Tags
-   * 
-   * Add tags to your applications to help organize and find your data.
-   * 
-   * @link https://docs.newrelic.com/docs/new-relic-solutions/new-relic-one/core-concepts/use-tags-help-organize-find-your-data/
-   */
-  
-  // Fetch an application by name
-  const app = newrelic.getEntityOutput({
-    name,
-  })
-
-  // Create tags for the application
-  tags[name] = new newrelic.EntityTags(`${name}-tags`, {
-    guid: app.guid,
-    tags: [
-      myTeamTag,
-      {
-        key: 'env',
-        values: ['testing'],
-      }
-    ],
-  })
-
-
-
-
-
-
-
-
-  /**
-   * Alerts
-   * 
-   * Receive notifications when an incident is created, closed, or updated.
-   * 
-   * @link https://docs.newrelic.com/docs/alerts-applied-intelligence/new-relic-alerts/get-started/your-first-nrql-condition/
-   * @link https://docs.newrelic.com/docs/query-your-data/nrql-new-relic-query-language/get-started/introduction-nrql-new-relics-query-language/
-   */
   policies[name] = new newrelic.AlertPolicy(`${name}-alert`, {
     /**
      * The rollup strategy for the policy.
@@ -297,3 +287,5 @@ urls.forEach(url => {
     ignoreChanges: ['locationsPublics'],
   });
 })
+
+// That's all folks :D

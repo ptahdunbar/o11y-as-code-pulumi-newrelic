@@ -1,13 +1,24 @@
 version: "3"
 
 services:
-  express:
-    build: apps/express
-    env_file: apps/express/.env
+  api:
+    build: apps/web-api
+    env_file: apps/web-api/.env
+    container_name: web-api-pulumi
     ports:
-      - "3000:3000"
-  next:
-    build: apps/next
-    env_file: apps/next/.env
+      - "3001:3001"
+    depends_on:
+      - login
+    networks:
+      - local_network
+  login:
+    build: apps/login-service
+    env_file: apps/login-service/.env
+    container_name: login-service-pulumi
     ports:
-      - "9000:9000"
+      - "3002:3002"
+    networks:
+      - local_network
+networks:
+  local_network:
+    driver: bridge

@@ -36,7 +36,7 @@ cd infra
 pulumi config set newrelic:accountId 01234567
 pulumi config set newrelic:apiKey YYYYYYYYYYYYYY --secret
 pulumi config set newrelic:adminApiKey YYYYYYYYYYYYYY --secret
-pulumi config set newrelic-pulumi-workshop:notifyViaEmail user@acme.email
+pulumi config set o11y-as-code-pulumi-newrelic-workshop:notifyViaEmail user@acme.email
 ```
 
 ### Run Pulumi

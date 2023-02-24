@@ -6,9 +6,7 @@ RUN apt-get update && apt-get install curl -y && \
 
 WORKDIR /usr/src/app
 COPY --chmod=0755 docker/entrypoint.sh entrypoint.sh
-# COPY --chmod=0755 docker/run-load-tests.sh run-load-tests.sh
-RUN chmod +x entrypoint.sh
-# RUN chmod +x run-load-tests.sh
+COPY --chmod=0755 docker/run-load-tests.sh run-load-tests.sh
 COPY . .
 RUN npm ci
 

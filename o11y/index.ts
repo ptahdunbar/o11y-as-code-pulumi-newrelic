@@ -10,30 +10,11 @@
 import * as pulumi from '@pulumi/pulumi';
 import * as newrelic from '@pulumi/newrelic';
 
-// Let's use the values from Pulumi.<stack>.yaml
-const config = new pulumi.Config
-
 // Applications to monitor
 const apps = [
   'login-service',
   'web-api',
 ]
-
-// Tag all resources created with my team
-const myTeamTag = {
-  key: 'team',
-  values: ['acme_corp'],
-}
-
-// Group all your resources under a workload
-const workload = 'O11yAsCode Workload (Pulumi)'
-
-// simple type definitions so TypeScript doesn't complain :D
-let policies: { [key: string]: any } = {}
-let tags: { [key: string]: any } = {}
-let synthetics: { [key: string]: any } = {}
-
-
 
 /**
  * Tags
@@ -42,26 +23,11 @@ let synthetics: { [key: string]: any } = {}
  * 
  * @link https://docs.newrelic.com/docs/new-relic-solutions/new-relic-one/core-concepts/use-tags-help-organize-find-your-data/
  */
-apps.forEach(name => {  
-  // Fetch an application by name
-  const app = newrelic.getEntityOutput({
-    name,
-  })
 
-  // Create tags for the application
-  tags[name] = new newrelic.EntityTags(`${name}-tags`, {
-    guid: app.guid,
-    tags: [
-      myTeamTag,
-      {
-        key: 'env',
-        values: ['testing'],
-      }
-    ],
-  })
+// TODO: Add tags here
+apps.forEach(async name => {
+  console.log(name)
 })
-
-
 
 /**
  * Workloads
@@ -70,18 +36,8 @@ apps.forEach(name => {
  * 
  * @link https://docs.newrelic.com/docs/new-relic-solutions/new-relic-one/workloads/use-workloads/
  */
-const _workload = new newrelic.plugins.Workload(workload, {
-  entitySearchQueries: [{
-    query: `tags.team = '${myTeamTag.values[0]}'`,
-  }],
-});
 
-export const workload_permalink = _workload.permalink
-
-
-
-
-
+// TODO: Add workloads here
 
 
 /**
@@ -90,27 +46,7 @@ export const workload_permalink = _workload.permalink
  * @link https://docs.newrelic.com/docs/query-your-data/explore-query-data/dashboards/introduction-dashboards/
  */
 
-// Import Dashboards from JSON
-const dashboard = new newrelic.OneDashboardJson('imported-dashboard', {
-    json: JSON.stringify(require('./dashboards/node.json')),
-});
-export const dashboard_permalink = dashboard.permalink
-
-// Fetch an existing dashboard from New Relic by GUID
-// const dashboard = newrelic.OneDashboardJson.get('dashboard', 'AABBCCDDEEFFGGHHIIJJKKLLMMNNOOPP')
-// export const getDashboardByGuid = dashboard.updatedAt
-
-
-
-
-
-
-
-
-
-
-
-
+// TODO: Add dashboards here
 
 
 /**
@@ -118,38 +54,8 @@ export const dashboard_permalink = dashboard.permalink
  * 
  * @link https://docs.newrelic.com/docs/alerts-applied-intelligence/new-relic-alerts/alert-notifications/notification-channels-control-where-send-alerts/
  */
-const emailDestination = new newrelic.NotificationDestination('email-destination', {
-  type: 'EMAIL',
-  active: true,
-  properties: [
-    {
-      key: 'email',
-      value: config.require('notifyViaEmail'),
-    },
-    {
-      key: 'includeJsonAttachment',
-      value: pulumi.output('true'),
-    }
-  ],
-});
 
-const emailChannel = new newrelic.NotificationChannel('email-channel', {
-  destinationId: emailDestination.id.apply(id => id),
-  product: 'IINT',
-  type: 'EMAIL',
-  properties: [
-    {
-      key: 'subject',
-      value: '{{issueTitle}}',
-    },
-  ],
-}, {
-  dependsOn: emailDestination,
-});
-
-
-
-
+// TODO: Add email notification destinations here
 
 
 /**
@@ -160,62 +66,9 @@ const emailChannel = new newrelic.NotificationChannel('email-channel', {
  * @link https://docs.newrelic.com/docs/alerts-applied-intelligence/new-relic-alerts/get-started/your-first-nrql-condition/
  * @link https://docs.newrelic.com/docs/query-your-data/nrql-new-relic-query-language/get-started/introduction-nrql-new-relics-query-language/
  */
-apps.forEach(name => {
-  policies[name] = new newrelic.AlertPolicy(`${name}-alert`, {
-    name: `${name} Alert Policy (Pulumi)`,
-    /**
-     * The rollup strategy for the policy.
-     * Options include: `PER_POLICY`, `PER_CONDITION`, or `PER_CONDITION_AND_TARGET`.  The default is `PER_POLICY`.
-     */
-    incidentPreference: 'PER_CONDITION',
-  });
+apps.forEach(async name => {
 
-  const latencyCondition = new newrelic.NrqlAlertCondition(`${name}-latency-condition`, {
-    description: 'Alert when latency exceed acceptable threshold.',
-    policyId: policies[name].id.apply((id: any) => parseInt(id)),
-    nrql: {
-      query: `SELECT (count(apm.service.error.count) / count(apm.service.transaction.duration))*100 FROM Metric WHERE (appName ='${name}') AND (transactionType = 'Web')`,
-    },
-    critical: {
-      operator: 'above_or_equals',
-      threshold: 1,
-      thresholdDuration: 60,
-      thresholdOccurrences: 'at_least_once',
-    },
-    aggregationMethod: 'EVENT_FLOW',
-    aggregationDelay: '60',
-    violationTimeLimitSeconds: 300000,
-    enabled: true,
-  }, {
-    dependsOn: policies[name],
-  });
-
-  const errorCondition = new newrelic.NrqlAlertCondition(`${name}-error-condition`, {
-    description: 'Alert when errors exceed acceptable threshold.',
-    policyId: policies[name].id.apply((id: any) => parseInt(id)),
-    nrql: {
-      query: `SELECT count(*) FROM TransactionError WHERE (appName = '${name}') AND (\`error.expected\` IS FALSE OR \`error.expected\` IS NULL)`,
-    },
-    critical: {
-      operator: 'above_or_equals',
-      threshold: 1,
-      thresholdDuration: 300,
-      thresholdOccurrences: 'at_least_once',
-    },
-    aggregationMethod: 'EVENT_FLOW',
-    aggregationDelay: '60',
-    violationTimeLimitSeconds: (3 * 60000), // 3 minutes
-    enabled: true,
-  }, {
-    dependsOn: policies[name],
-  });
-
-
-
-
-
-
-
+  // TODO: Add alert policies and conditions here
 
   /**
    * Workflow notifications
@@ -224,37 +77,9 @@ apps.forEach(name => {
    * 
    * @link https://docs.newrelic.com/docs/alerts-applied-intelligence/applied-intelligence/incident-workflows/incident-workflows/
    */
-  const workflow = new newrelic.Workflow(`${name}-workflow`, {
-    accountId: newrelic.config.accountId,
-    name: `${name}-workflow (Pulumi)`,
-    issuesFilter: {
-      name,
-      type: 'FILTER',
-      predicates: [{
-          attribute: 'accumulations.policyName',
-          operator: 'EXACTLY_MATCHES',
-          values: [policies[name].name.apply((name: any) => name)],
-      }],
-    },
-    destinations: [
-      {
-        channelId: emailChannel.id.apply(id => id)
-      },
-    ],
-    mutingRulesHandling: 'NOTIFY_ALL_ISSUES',
-  });
+
+  // TODO: Add workflow notifications here
 })
-
-
-
-
-
-
-
-
-
-
-
 
 /**
  * Synthetics
@@ -263,32 +88,7 @@ apps.forEach(name => {
  * 
  * @link https://docs.newrelic.com/docs/synthetics/synthetic-monitoring/getting-started/get-started-synthetic-monitoring/
  */
-let urls = [
-  'http://acme-corp.com',
-  'https://acme-corp.com/0101/index.html',
-]
 
-urls.forEach(url => {
-  synthetics[url] = new newrelic.synthetics.Monitor(`check-${url}`, {
-    status: 'ENABLED',
-    type: 'BROWSER',
-    uri: url,
-    period: 'EVERY_MINUTE',
-    name: `Check ${url} (Pulumi)`,
-    
-    // https://docs.newrelic.com/docs/synthetics/synthetic-monitoring/administration/synthetic-public-minion-ips/#location
-    locationsPublics: ['AWS_US_EAST_1', 'AWS_US_WEST_1'],
-  
-    enableScreenshotOnFailureAndScript: true,
-    validationString: 'success',
-    verifySsl: true,
-    runtimeTypeVersion: '100',
-    runtimeType: 'CHROME_BROWSER',
-    scriptLanguage: 'JAVASCRIPT',
-    tags: [myTeamTag],
-  }, {
-    ignoreChanges: ['locationsPublics'],
-  });
-})
+// TODO: Add synthetic monitors here
 
 // That's all folks :D

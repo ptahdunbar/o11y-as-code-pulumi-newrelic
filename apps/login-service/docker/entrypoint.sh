@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-echo "Starting server"
-npm run start
+echo "Starting server in the background"
+npm run start &
 
-# run load tests
+echo "Run load tests"
 ./run-load-tests.sh

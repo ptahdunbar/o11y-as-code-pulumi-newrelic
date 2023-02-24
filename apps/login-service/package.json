@@ -1,7 +1,7 @@
 {
-  "name": "mobileservicedemo",
+  "name": "login-service",
+  "private": true,
   "version": "1.0.0",
-  "description": "used for mobile demo",
   "main": "server.js",
   "scripts": {
     "start": "nodemon server.js",

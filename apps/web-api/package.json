@@ -1,5 +1,6 @@
 {
-  "name": "mobileservicedemo",
+  "name": "web-api",
+  "private": true,
   "version": "1.0.0",
   "description": "used for mobile demo",
   "main": "server.js",

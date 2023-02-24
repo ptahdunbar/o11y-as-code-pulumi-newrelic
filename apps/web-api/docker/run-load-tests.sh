@@ -10,4 +10,9 @@ while true; do
   curl --silent http://localhost:${PORT}/webrequest
   # random sleep between 1 and 10 seconds
   sleep $((1 + $RANDOM % 10))
+
+  echo http://localhost:${PORT}/billing
+  curl --silent http://localhost:${PORT}/billing
+
+  sleep $((1 + $RANDOM % 10))
 done

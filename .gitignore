@@ -1,6 +1,0 @@
-node_modules/
-newrelic_agent.log
-.env
-Pulumi.local.yaml
-.DS_Store
-tmp

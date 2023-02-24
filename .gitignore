@@ -4,5 +4,3 @@ newrelic_agent.log
 Pulumi.local.yaml
 .DS_Store
 tmp
-instruqt-tracks
-.github

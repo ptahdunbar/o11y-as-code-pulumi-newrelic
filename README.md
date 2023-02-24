@@ -2,7 +2,7 @@
 
 # Workshop: Observability as Code with Pulumi
 
-This app demonstrates how to incorporate Pulumi and New Relic together using Observability as Code.
+This workshop demonstrates how to apply Observability as Code using Pulumi and New Relic together.
 
 ## Set up Pulumi and manage your secrets
 
@@ -32,7 +32,7 @@ docker compose up
 
 #### Configure your secrets
 ```
-cd infra
+cd o11y
 pulumi config set newrelic:accountId 01234567
 pulumi config set newrelic:apiKey YYYYYYYYYYYYYY --secret
 pulumi config set newrelic:adminApiKey YYYYYYYYYYYYYY --secret

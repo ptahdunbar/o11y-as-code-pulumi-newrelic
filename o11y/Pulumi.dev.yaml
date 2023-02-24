@@ -1,6 +1,0 @@
-config:
-  aws:region: us-east-1
-  o11y-as-code-pulumi-newrelic-workshop:notifyViaEmail: pdunbar@newrelic.com
-  newrelic:accountId: "2806787"
-  newrelic:apiKey:
-    secure: AAABAMmURSV+9zxH+AsiVa5QeM2T/FuEif1Qoixqw4y0FBtWXi4rQKhxgrbyJCBLHi1+DBS/l19oSKWwzu2HvA==
